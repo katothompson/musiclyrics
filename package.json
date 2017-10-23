@@ -1,0 +1,35 @@
+{
+  "name": "musiclyrics",
+  "version": "1.0.0",
+  "description": "Database of top 100 pop songs over fifty years, including lyrics and sentiment analysis.",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/katothompson/musiclyrics.git"
+  },
+  "keywords": [
+    "sentiment",
+    "d3js",
+    "express",
+    "sqlite3",
+    "song",
+    "lyrics"
+  ],
+  "author": "Kato Thompson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/katothompson/musiclyrics/issues"
+  },
+  "homepage": "https://github.com/katothompson/musiclyrics#readme",
+  "dependencies": {
+    "ava": "^0.22.0",
+    "d3": "^4.11.0",
+    "express": "^4.16.2",
+    "sentiment": "^4.1.0",
+    "sqlite3": "^3.1.13",
+    "supertest": "^3.0.0"
+  }
+}

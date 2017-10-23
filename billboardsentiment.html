@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+      <meta charset="UTF-8">
+      <title>Sentiment Analysis of Billboard Top 100</title>
+      <style>
+            body { padding: 20px}
+            div { font-family: sans-serif; width: 580px}
+      </style>
+</head>
+<body>
+      <div id='scatterPlot'></div>
+      <div id="slideContainer"></div>
+      <div>
+            <p>This is an example of a scatterplot created using <a href="https://d3js.org/">D3js</a>. The sentiment analysis was done using <a href="https://www.npmjs.com/package/sentiment">Sentiment</a> by diy, and the Billboard Top 100 songs, lyrics and ranks were collected by walkerkq and can be found <a href="https://github.com/walkerkq/musiclyrics">here</a>.</p>
+            <p>The radius of each circle is scaled to the rank of the song it represents. The more popular the song, the larger the radius. The slider is used to filter the songs by rank. Songs ranking higher than the slider value are displayed. Hovering over a circle causes a tootip to appear with information about the song.</p>
+      </div>
+      
+      
+      <script src="https://d3js.org/d3.v4.min.js"></script>
+      <script src="billboard.js"></script>
+      <script src="billboardsentiment.js"></script>
+</body>
+</html>
