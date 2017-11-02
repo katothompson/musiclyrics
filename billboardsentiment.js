@@ -1,5 +1,5 @@
 var height = 400;
-var width = 500;
+var width = 600;
 var padding = 70;
 var startingRank = 50;
 var circleColor = 'limegreen';
@@ -9,6 +9,7 @@ var svg = d3.select("#scatterPlot").append('svg')
       .attr('height', height)
       .attr('width', width)
 var plot = svg.append("g");
+var baseurl = './';
 
 // create tooltip
 var div = d3.select("body").append("div")
@@ -64,28 +65,54 @@ var slider = d3.select(slideContainer)
 // define the values for the tickmarks on the slider
 var tickmarks = d3.select("#tickmarks")
       for (var i = 0; i <= 100; i += 10) {
-
             var j = i == 0 ? 1:i;
-            console.log(j)
-            
             tickmarks.append("option")
                   .attr("value", j)
       }
 
 // get data async
 
-d3.json("http://localhost:8080/billboardtop100.json", function(err, rows) {
+d3.json(baseurl + "billboardtop100.json", function(err, rows) {
       if(err) {
             console.log('error getting data', err);
       } else {
-            console.log('data loaded ', rows[0])
             var data = rows;
-            drawPlot(data, 50);
+            var meanData = createMeanData(data);
+            var meanweightedData = createMeanWeightedData(data);
+
+            // draw the scatter plot
+            drawPlot(data, 50, meanData, meanweightedData);
+
+            // todo onclick show lyrics
       }
 })
+// line data
+var createMeanData = function(data) {
+      var minYear = d3.min(data, d => d.Year)
+      var maxYear = d3. max(data, d => d.Year)
+      var meanSentimentArray = [];
+      for (var i = minYear; i <= maxYear; i++) {
+            var dataFiltered = data.filter(d => +d.Year === +i)
+            var avg = d3.mean(dataFiltered, d => d.sentiment);
+            meanSentimentArray.push({ "year":+i, "meansentiment":+avg})
+      }
+      return meanSentimentArray;
+}
 
+var createMeanWeightedData = function(data) {
+      var minYear = d3.min(data, d => d.Year)
+      var maxYear = d3. max(data, d => d.Year)
+      var meanWeightedSentimentArray = [];
+      for (var i = minYear; i <= maxYear; i++) {
+            var dataFiltered = data.filter(d => +d.Year === +i)
+            var avg = d3.mean(dataFiltered, d => (d.sentiment * 100) / d.Rank);
+            meanWeightedSentimentArray.push({ "year":+i, "meansentiment":+avg})
+      }
+      return meanWeightedSentimentArray;
+}
+      
 // draw the plot
-var drawPlot = function(data, rank) {
+var drawPlot = function(data, rank, meanData, meanweightedData) {
 
       // define domain of the x and y data and range of the pixel scale
       var xScale = d3.scaleLinear()
@@ -99,7 +126,7 @@ var drawPlot = function(data, rank) {
       // define the domain of the r data, and the pixel scale
       var rScale = d3.scaleLinear()
       .domain(d3.extent(data, d => d.Rank))
-      .range([4, .8])
+      .range([4, 1.5])
 
       // x tick values
       var formatAxis = d3.format('.0f');
@@ -137,7 +164,6 @@ var drawPlot = function(data, rank) {
 
       // filter data by rank
       var dataFiltered = data.filter(d => +d.Rank <= startingRank)
-      console.log('filtered data length', data.length)
       // draw plot
       plot.selectAll('circle')
                   .data(dataFiltered)
@@ -150,7 +176,6 @@ var drawPlot = function(data, rank) {
                   .style('fill', circleColor)
                   .style('fill-opacity',0)
                   .on('mouseover', function(d) {
-                        //console.log('mouseover')
                         div.transition()
                               .duration(600)
                               .style('opacity', .9);
@@ -159,7 +184,6 @@ var drawPlot = function(data, rank) {
                               .style("top", (d3.event.pageY - 28) + "px");
                   })
                   .on('mouseout', function(d) {
-                        //console.log('mouseout')
                         div.transition()
                               .duration(400)
                               .style("opacity", 0)
@@ -168,10 +192,32 @@ var drawPlot = function(data, rank) {
                   .duration(400)
                   .style('fill-opacity', fillOpacity)
 
+      // draw line
+      // Define the line
+      var meanline = d3.line()
+            .x(d => xScale(d.year))
+            .y(d => yScale(d.meansentiment));  
+
+      var meanweightedline = d3.line()
+                  .x(d => xScale(d.year))
+                  .y(d => yScale(d.sentiment));
+
+      svg.append("path")
+            .attr("class", "line")
+            .attr("d", meanline(meanData))
+            .style('stroke', 'red') 
+            .style('stroke-width', '2')
+            .style('fill', 'none');
+      svg.append("path")
+            .attr("class", "line")
+            .attr("d", meanline(meanweightedData))
+            .style('stroke', 'yellow') 
+            .style('stroke-width', '2')
+            .style('fill', 'none');
+              
       // update plot on new value from slider
       var slider = d3.select('#rankSlider');
       slider.on('input', function() {
-            console.log(this.value);
             updatePlot(data, this.value);
       })
 
@@ -193,32 +239,29 @@ var drawPlot = function(data, rank) {
                         .attr('class', 'circle')
                         .style('fill', circleColor)
                         .style('fill-opacity',0)
+                        .on('mouseover', function(d) {
+                              div.transition()
+                                    .duration(400)
+                                    .style('opacity', .9);
+                              div.html(d.Song + "<br/> by " + d.Artist + "<br/> rank: " + d.Rank)
+                                    .style("left", (d3.event.pageX) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                        })
+                        .on('mouseout', function(d) {
+                              div.transition()
+                                    .duration(600)
+                                    .style("opacity", 0);
+                        })
                         .transition()
                         .duration(400)
                         .style('fill-opacity', fillOpacity)
-            // add mouseover for tooltip
-             update.merge(update)
-                  .on('mouseover', function(d) {
-                        //console.log('mouseover')
-                        div.transition()
-                              .duration(400)
-                              .style('opacity', .9);
-                        div.html(d.Song + "<br/> by " + d.Artist + "<br/> rank: " + d.Rank)
-                              .style("left", (d3.event.pageX) + "px")
-                              .style("top", (d3.event.pageY - 28) + "px");
-                  })
-                  .on('mouseout', function(d) {
-                        //console.log('mouseout')
-                        div.transition()
-                              .duration(600)
-                              .style("opacity", 0);
-                  })
+                  
             // remove old circles
             update.exit()
                         .transition()
-                        .duration(300)
+                        .duration(400)
                         .style('fill-opacity', 0)
-                        .attr('r', d => 3*rScale(d.Rank))
+                        .attr('r', d => 0)
                   .remove();
       }
 
