@@ -5,6 +5,8 @@ var startingRank = 50;
 var circleColor = 'limegreen';
 var fillOpacity = 0.4;
 var tooltipBgColor = 'mediumspringgreen';
+var lineColor = "indianred";
+var weightedlineColor = "gold";
 var svg = d3.select("#scatterPlot").append('svg')
       .attr('height', height)
       .attr('width', width)
@@ -25,7 +27,7 @@ var div = d3.select("body").append("div")
       .style("border-radius", "8px")
       .style("pointer-events", "none");
 
-// append the labels and title
+// append the labels, title, and key
 var title = svg.append("text")
       .attr('x', width/2)
       .attr('y', padding/3)
@@ -45,6 +47,24 @@ var yLabel = svg.append("text")
       .attr('y', padding/3)
       .style('text-anchor', 'middle')
       .text('Sentiment')
+
+var key = svg.append('g')
+      .attr('transform', 'translate(' + (width - padding) + ', ' + padding + ')')
+key.append('text')
+      .attr('y', 15) 
+      .attr('x', 5)          
+      .style('text-anchor', 'end')
+      .style('font-size', '0.6rem')
+      .text('___average sentiment score')
+      .style('fill', lineColor)
+key.append('text')
+      .attr('y', 30)
+      .attr('x', 5)
+      .style('text-anchor', 'end')
+      .style('font-size', '0.6rem')
+      .text('___weighted average sentiment score')
+      .style('fill', weightedlineColor)
+
 // get slideContainer and append label, slider, datalist
 var slider = d3.select(slideContainer)
       slider.append("label")
@@ -205,13 +225,13 @@ var drawPlot = function(data, rank, meanData, meanweightedData) {
       svg.append("path")
             .attr("class", "line")
             .attr("d", meanline(meanData))
-            .style('stroke', 'red') 
+            .style('stroke', lineColor) 
             .style('stroke-width', '2')
             .style('fill', 'none');
       svg.append("path")
             .attr("class", "line")
             .attr("d", meanline(meanweightedData))
-            .style('stroke', 'yellow') 
+            .style('stroke', weightedlineColor) 
             .style('stroke-width', '2')
             .style('fill', 'none');
               
